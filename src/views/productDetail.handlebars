@@ -1,0 +1,22 @@
+<h1>{{title}}</h1>
+
+<p>{{description}}</p>
+<p><strong>Precio:</strong> ${{price}}</p>
+<p>Categoría: {{category}}</p>
+
+<button onclick="addToCart('{{_id}}')">
+  Agregar al carrito
+</button>
+
+<a href="/products">⬅ Volver</a>
+
+<script>
+  const cartId = "{{cartId}}";
+
+  async function addToCart(productId) {
+    await fetch(`/api/carts/${cartId}/products/${productId}`, {
+      method: "POST"
+    });
+    alert("Producto agregado al carrito 🛒");
+  }
+</script>
