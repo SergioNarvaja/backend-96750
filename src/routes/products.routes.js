@@ -1,8 +1,17 @@
 import { Router } from "express";
 import ProductsDAO from "../dao/products.dao.js";
+import passport from "passport";
+import { authorize } from "../middlewares/authorization.middleware.js";
 
 const router = Router();
 const productsDAO = new ProductsDAO();
+
+router.delete(
+  "/:pid",
+  passport.authenticate("jwt", { session: false }),
+  authorize(["admin"]),
+  deleteProduct
+);
 
 router.get("/", async (req, res) => {
   try {

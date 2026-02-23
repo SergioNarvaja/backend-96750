@@ -3,22 +3,32 @@ import { engine } from "express-handlebars";
 import { Server } from "socket.io";
 import path from "path";
 import { fileURLToPath } from "url";
+import dotenv from "dotenv";
+import cookieParser from "cookie-parser";
+import passport from "passport";
 import connectMongo from "./src/config/db.js";
+import { initializePassport } from "./src/config/passport.config.js";
 import ProductsDAO from "./src/dao/products.dao.js";
 import productsRouter from "./src/routes/products.routes.js";
 import cartsRouter from "./src/routes/carts.routes.js";
 import viewsRouter from "./src/routes/views.routes.js";
-import cookieParser from "cookie-parser";
+import sessionsRouter from "./src/routes/sessions.routes.js";
+import usersRouter from "./src/routes/users.routes.js";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+dotenv.config();
 
 const app = express();
 const productsDAO = new ProductsDAO();
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+
+initializePassport();
+app.use(passport.initialize());
 
 app.engine("handlebars", engine());
 app.set("view engine", "handlebars");
@@ -26,6 +36,8 @@ app.set("views", path.join(__dirname, "src/views"));
 
 app.use("/api/products", productsRouter);
 app.use("/api/carts", cartsRouter);
+app.use("/api/sessions", sessionsRouter);
+app.use("/api/users", usersRouter);
 app.use("/", viewsRouter);
 
 const PORT = 8080;
