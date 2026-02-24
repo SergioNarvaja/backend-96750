@@ -2,7 +2,7 @@ import { Router } from "express";
 import passport from "passport";
 import { generateToken } from "../utils/jwt.js";
 import { UserModel } from "../models/user.model.js";
-import { CartModel } from "../models/cart.model.js";
+import CartModel from "../models/cart.model.js";
 import { createHash } from "../utils/hash.js";
 
 const router = Router();

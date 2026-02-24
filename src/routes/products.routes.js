@@ -6,6 +6,31 @@ import { authorize } from "../middlewares/authorization.middleware.js";
 const router = Router();
 const productsDAO = new ProductsDAO();
 
+const deleteProduct = async (req, res) => {
+  try {
+    const { pid } = req.params;
+
+    const deleted = await productsDAO.delete(pid);
+
+    if (!deleted) {
+      return res.status(404).json({
+        status: "error",
+        error: "Producto no encontrado"
+      });
+    }
+
+    res.json({
+      status: "success",
+      message: "Producto eliminado correctamente"
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      status: "error",
+      error: "Error al eliminar producto"
+    });
+  }
+};
 router.delete(
   "/:pid",
   passport.authenticate("jwt", { session: false }),
