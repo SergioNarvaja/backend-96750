@@ -19,7 +19,6 @@ router.post(
         product
       });
     } catch (error) {
-      console.error(error);
       res.status(500).json({
         status: "error",
         error: "Error al crear producto"
@@ -28,31 +27,58 @@ router.post(
   }
 );
 
-const deleteProduct = async (req, res) => {
-  try {
-    const { pid } = req.params;
+router.delete(
+  "/:pid",
+  passport.authenticate("jwt", { session: false }),
+  authorize(["admin"]),
+  async (req, res) => {
+    try {
+      const { pid } = req.params;
 
-    const deleted = await productsDAO.delete(pid);
+      const deleted = await productsDAO.delete(pid);
 
-    if (!deleted) {
-      return res.status(404).json({
+      if (!deleted) {
+        return res.status(404).json({
+          status: "error",
+          error: "Producto no encontrado"
+        });
+      }
+
+      res.json({
+        status: "success",
+        message: "Producto eliminado correctamente"
+      });
+    } catch (error) {
+      res.status(500).json({
         status: "error",
-        error: "Producto no encontrado"
+        error: "Error al eliminar producto"
       });
     }
-
-    res.json({
-      status: "success",
-      message: "Producto eliminado correctamente"
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({
-      status: "error",
-      error: "Error al eliminar producto"
-    });
   }
-};
+);
+
+router.put(
+  "/:pid",
+  passport.authenticate("jwt", { session: false }),
+  authorize(["admin","user"]),
+  async (req, res) => {
+    try {
+      const { pid } = req.params;
+
+      const updated = await productsDAO.update(pid, req.body);
+
+      res.json({
+        status: "success",
+        product: updated
+      });
+    } catch (error) {
+      res.status(500).json({
+        status: "error",
+        error: "Error al actualizar producto"
+      });
+    }
+  }
+);
 
 router.get("/", async (req, res) => {
   try {
@@ -90,7 +116,6 @@ router.get("/", async (req, res) => {
       nextLink: result.hasNextPage ? `${baseUrl}&page=${result.nextPage}` : null
     });
   } catch (error) {
-    console.error(error);
     res.status(500).json({
       status: "error",
       error: "Error al obtener productos"

@@ -5,6 +5,8 @@ import { userDTO } from "../dto/user.dto.js";
 import UserDAO from "../dao/user.dao.js";
 import UserRepository from "../repositories/user.repository.js";
 import UserService from "../services/user.service.js";
+import { generateResetToken, verifyResetToken } from "../utils/jwt.js";
+import { createHash, isValidPassword } from "../utils/hash.js";
 
 const router = Router();
 const userDAO = new UserDAO();
@@ -50,5 +52,76 @@ router.get(
     });
   }
 );
+
+router.post("/forgot-password", async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    const user = await userService.getByEmail(email);
+
+    if (!user) {
+      return res.status(404).json({
+        status: "error",
+        error: "Usuario no encontrado"
+      });
+    }
+
+    const token = generateResetToken(email);
+
+    const resetLink = `http://localhost:8080/reset-password?token=${token}`;
+
+    console.log("📩 LINK DE RECUPERACIÓN:");
+    console.log(resetLink);
+
+    res.json({
+      status: "success",
+      message: "Se envió link de recuperación (ver consola)"
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      status: "error",
+      error: error.message
+    });
+  }
+});
+
+router.post("/reset-password", async (req, res) => {
+  try {
+    const { token, newPassword } = req.body;
+
+    const decoded = verifyResetToken(token);
+
+    const user = await userService.getByEmail(decoded.email);
+
+    if (!user) {
+      return res.status(404).json({
+        status: "error",
+        error: "Usuario no encontrado"
+      });
+    }
+
+    if (isValidPassword(user, newPassword)) {
+      return res.status(400).json({
+        status: "error",
+        error: "No podés usar la misma contraseña"
+      });
+    }
+
+    user.password = createHash(newPassword);
+    await user.save();
+
+    res.json({
+      status: "success",
+      message: "Contraseña actualizada correctamente"
+    });
+
+  } catch (error) {
+    res.status(400).json({
+      status: "error",
+      error: "Token inválido o expirado"
+    });
+  }
+});
 
 export default router;

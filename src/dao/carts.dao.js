@@ -11,11 +11,10 @@ export default class CartsDAO {
       .lean();
   }
 
-  update = (id, cart) =>
-    CartModel.findByIdAndUpdate(id, cart, { new: true });
-
   async addProduct(cid, pid) {
     const cart = await CartModel.findById(cid);
+
+    if (!cart) throw new Error("Carrito no encontrado");
 
     const productIndex = cart.products.findIndex(
       (p) => p.product.toString() === pid
@@ -24,7 +23,10 @@ export default class CartsDAO {
     if (productIndex !== -1) {
       cart.products[productIndex].quantity++;
     } else {
-      cart.products.push({ product: pid, quantity: 1 });
+      cart.products.push({
+        product: pid,
+        quantity: 1
+      });
     }
 
     return await cart.save();

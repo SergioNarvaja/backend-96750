@@ -40,4 +40,8 @@ export default class UserService {
 
     return user;
   }
+
+  async getByEmail(email) {
+    return await this.userRepository.getByEmail(email);
+  }
 }

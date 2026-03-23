@@ -21,7 +21,6 @@ export default class PurchaseService {
       const product = await this.productRepository.getById(item.product._id);
 
       if (product.stock >= item.quantity) {
-        // ✅ hay stock → comprar
         product.stock -= item.quantity;
         await this.productRepository.update(product._id, product);
 
@@ -29,7 +28,6 @@ export default class PurchaseService {
 
         productsPurchased.push(item);
       } else {
-        // ❌ no hay stock
         productsNotPurchased.push(item);
       }
     }
@@ -44,8 +42,10 @@ export default class PurchaseService {
       });
     }
 
-    cart.products = productsNotPurchased;
-    await this.cartRepository.update(cart._id, cart);
+    await this.cartRepository.updateCart(
+      cart._id,
+      productsNotPurchased
+    );
 
     return {
       ticket,

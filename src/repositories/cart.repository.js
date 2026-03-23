@@ -3,9 +3,18 @@ export default class CartRepository {
     this.dao = dao;
   }
 
-  getById = (id) => this.dao.getById(id);
+  getById = (cid) => this.dao.getById(cid);
 
-  create = (cart) => this.dao.create(cart);
+  create = () => this.dao.create();
 
-  update = (id, data) => this.dao.update(id, data);
+  addProduct = (cid, pid) => this.dao.addProduct(cid, pid);
+
+  updateCart = (cid, products) => this.dao.updateCart(cid, products);
+
+  updateProductQuantity = (cid, pid, quantity) =>
+    this.dao.updateProductQuantity(cid, pid, quantity);
+
+  deleteProduct = (cid, pid) => this.dao.deleteProduct(cid, pid);
+
+  clearCart = (cid) => this.dao.clearCart(cid);
 }

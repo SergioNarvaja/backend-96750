@@ -1,5 +1,4 @@
 import { Router } from "express";
-import CartModel from "../models/cart.model.js";
 import passport from "passport";
 import { authorize } from "../middlewares/authorization.middleware.js";
 import CartsDAO from "../dao/carts.dao.js";
@@ -24,9 +23,83 @@ const purchaseService = new PurchaseService(
 );
 
 router.post(
+  "/",
+  passport.authenticate("jwt", { session: false }),
+  authorize(["user", "admin"]),
+  async (req, res) => {
+    try {
+      const newCart = await cartRepository.create();
+
+      res.status(201).json({
+        status: "success",
+        cart: newCart
+      });
+    } catch (error) {
+      res.status(500).json({
+        status: "error",
+        error: error.message
+      });
+    }
+  }
+);
+
+router.post(
+  "/:cid/product/:pid",
+  passport.authenticate("jwt", { session: false }),
+  authorize(["user","admin"]),
+  async (req, res) => {
+    try {
+      const { cid, pid } = req.params;
+
+      await cartRepository.addProduct(cid, pid);
+
+      res.json({
+        status: "success",
+        message: "Producto agregado al carrito"
+      });
+    } catch (error) {
+      res.status(500).json({
+        status: "error",
+        error: error.message
+      });
+    }
+  }
+);
+
+router.get(
+  "/:cid",
+  passport.authenticate("jwt", { session: false }),
+  authorize(["user", "admin"]),
+  async (req, res) => {
+    try {
+      const { cid } = req.params;
+
+      const cart = await cartRepository.getById(cid);
+
+      if (!cart) {
+        return res.status(404).json({
+          status: "error",
+          error: "Carrito no encontrado"
+        });
+      }
+
+      res.json({
+        status: "success",
+        cart
+      });
+    } catch (error) {
+      res.status(500).json({
+        status: "error",
+        error: error.message
+      });
+    }
+  }
+);
+
+router.post(
   "/:cid/purchase",
   passport.authenticate("jwt", { session: false }),
-  authorize(["user"]),
+  authorize(["user","admin"]),
   async (req, res) => {
     try {
       const { cid } = req.params;
@@ -41,7 +114,6 @@ router.post(
         ticket: result.ticket,
         productsNotPurchased: result.productsNotPurchased
       });
-
     } catch (error) {
       res.status(400).json({
         status: "error",
