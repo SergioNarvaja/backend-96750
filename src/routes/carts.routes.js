@@ -1,25 +1,54 @@
 import { Router } from "express";
 import CartModel from "../models/cart.model.js";
+import passport from "passport";
+import { authorize } from "../middlewares/authorization.middleware.js";
+import CartsDAO from "../dao/carts.dao.js";
+import ProductDAO from "../dao/products.dao.js";
+import TicketDAO from "../dao/ticket.dao.js";
+import CartRepository from "../repositories/cart.repository.js";
+import ProductRepository from "../repositories/product.repository.js";
+import TicketRepository from "../repositories/ticket.repository.js";
+import PurchaseService from "../services/purchase.service.js";
 
 const router = Router();
+const cartDAO = new CartsDAO();
+const productDAO = new ProductDAO();
+const ticketDAO = new TicketDAO();
+const cartRepository = new CartRepository(cartDAO);
+const productRepository = new ProductRepository(productDAO);
+const ticketRepository = new TicketRepository(ticketDAO);
+const purchaseService = new PurchaseService(
+  cartRepository,
+  productRepository,
+  ticketRepository
+);
 
-router.post("/", async (req, res) => {
-  const newCart = await CartModel.create({ products: [] });
-  res.json(newCart);
-});
+router.post(
+  "/:cid/purchase",
+  passport.authenticate("jwt", { session: false }),
+  authorize(["user"]),
+  async (req, res) => {
+    try {
+      const { cid } = req.params;
 
-router.get("/:cid", async (req, res) => {
-  const { cid } = req.params;
+      const result = await purchaseService.purchase(
+        cid,
+        req.user.email
+      );
 
-  const cart = await CartModel.findById(cid)
-    .populate("products.product")
-    .lean();
+      res.json({
+        status: "success",
+        ticket: result.ticket,
+        productsNotPurchased: result.productsNotPurchased
+      });
 
-  if (!cart) {
-    return res.status(404).json({ error: "Carrito no encontrado" });
+    } catch (error) {
+      res.status(400).json({
+        status: "error",
+        error: error.message
+      });
+    }
   }
-
-  res.json(cart);
-});
+);
 
 export default router;

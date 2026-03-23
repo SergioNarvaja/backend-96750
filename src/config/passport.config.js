@@ -15,6 +15,7 @@ export const initializePassport = () => {
     async (email, password, done) => {
       try {
         const user = await UserModel.findOne({ email });
+
         if (!user) return done(null, false);
 
         if (!isValidPassword(user, password))
@@ -26,20 +27,22 @@ export const initializePassport = () => {
       }
     }
   ));
-passport.use("jwt", new JwtStrategy(
-  {
-    jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-    secretOrKey: process.env.JWT_SECRET
-  },
-  async (jwt_payload, done) => {
-    try {
-      const user = await UserModel.findById(jwt_payload.id);
-      if (!user) return done(null, false);
 
-      return done(null, user);
-    } catch (error) {
-      return done(error);
+  passport.use("jwt", new JwtStrategy(
+    {
+      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      secretOrKey: process.env.JWT_SECRET
+    },
+    async (jwt_payload, done) => {
+      try {
+        const user = await UserModel.findById(jwt_payload.id);
+
+        if (!user) return done(null, false);
+
+        return done(null, user);
+      } catch (error) {
+        return done(error);
+      }
     }
-  }
-));
+  ));
 };

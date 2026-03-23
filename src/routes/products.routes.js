@@ -6,6 +6,28 @@ import { authorize } from "../middlewares/authorization.middleware.js";
 const router = Router();
 const productsDAO = new ProductsDAO();
 
+router.post(
+  "/",
+  passport.authenticate("jwt", { session: false }),
+  authorize(["admin"]),
+  async (req, res) => {
+    try {
+      const product = await productsDAO.create(req.body);
+
+      res.status(201).json({
+        status: "success",
+        product
+      });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({
+        status: "error",
+        error: "Error al crear producto"
+      });
+    }
+  }
+);
+
 const deleteProduct = async (req, res) => {
   try {
     const { pid } = req.params;
@@ -31,12 +53,6 @@ const deleteProduct = async (req, res) => {
     });
   }
 };
-router.delete(
-  "/:pid",
-  passport.authenticate("jwt", { session: false }),
-  authorize(["admin"]),
-  deleteProduct
-);
 
 router.get("/", async (req, res) => {
   try {

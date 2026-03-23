@@ -1,6 +1,5 @@
 import mongoose from "mongoose";
-import ProductModel from "../models/product.model.js";
-import connectMongo from "../config/db.js";
+import ProductModel from "./models/product.model.js";
 
 const products = [
   {
@@ -23,14 +22,21 @@ const products = [
   }
 ];
 
-const seed = async () => {
-  await connectMongo();
+const seedProducts = async () => {
+  try {
+    await mongoose.connect(process.env.MONGO_URI);
 
-  await ProductModel.deleteMany();
-  await ProductModel.insertMany(products);
+    await ProductModel.deleteMany();
 
-  console.log("✅ Productos cargados correctamente");
-  mongoose.connection.close();
+    await ProductModel.insertMany(products);
+
+    console.log("🔥 Productos insertados");
+    process.exit();
+
+  } catch (error) {
+    console.error(error);
+    process.exit(1);
+  }
 };
 
-seed();
+seedProducts();

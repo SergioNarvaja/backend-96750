@@ -13,7 +13,6 @@ import productsRouter from "./src/routes/products.routes.js";
 import cartsRouter from "./src/routes/carts.routes.js";
 import viewsRouter from "./src/routes/views.routes.js";
 import sessionsRouter from "./src/routes/sessions.routes.js";
-import usersRouter from "./src/routes/users.routes.js";
 
 dotenv.config();
 
@@ -37,7 +36,6 @@ app.set("views", path.join(__dirname, "src/views"));
 app.use("/api/products", productsRouter);
 app.use("/api/carts", cartsRouter);
 app.use("/api/sessions", sessionsRouter);
-app.use("/api/users", usersRouter);
 app.use("/", viewsRouter);
 
 const PORT = 8080;

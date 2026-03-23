@@ -11,6 +11,9 @@ export default class CartsDAO {
       .lean();
   }
 
+  update = (id, cart) =>
+    CartModel.findByIdAndUpdate(id, cart, { new: true });
+
   async addProduct(cid, pid) {
     const cart = await CartModel.findById(cid);
 
